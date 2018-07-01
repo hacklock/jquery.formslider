@@ -42,6 +42,10 @@ class @AbstractFormsliderProgressBar extends AbstractFormsliderPlugin
     @bar          = $(@config.selectorProgress, @wrapper)
     @bar.css('transition-duration', (@config.animationSpeed / 1000) + 's')
 
+    @lengthByDataAttribute = @config?.dataKeyForMaxLength
+    unless $("[data-#{@config.dataKeyForMaxLength}]", @container).length
+      @lengthByDataAttribute = false
+
     @currentIndex = 0
 
   set: (indexFromZero, percent) ->
@@ -49,7 +53,7 @@ class @AbstractFormsliderProgressBar extends AbstractFormsliderPlugin
 
 
   setCountMax: (slide = null) =>
-    unless @config?.dataKeyForMaxLength
+    unless @lengthByDataAttribute
       @countMax = @slidesThatCount()
       return
 
