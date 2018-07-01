@@ -4,14 +4,18 @@ class @AnswerClick extends AbstractFormsliderPlugin
 
   onAnswerClicked: (event) =>
     event.preventDefault()
-    $answer          = $(event.currentTarget)
-    $answerRow       = $answer.closest(@config.answersSelector)
-    $allAnswersinRow = $(@config.answerSelector, $answerRow)
 
-    $allAnswersinRow.removeClass(@config.answerSelectedClass)
-    $answer.addClass(@config.answerSelectedClass)
+    $answer = $(event.currentTarget)
+    $slide  = $(@slideByIndex())
 
-    $slide = @slideByIndex()
+    if $slide.hasClass('multiple-answers')
+      $answer.toggleClass(@config.answerSelectedClass)
+
+    else
+      $answerRow       = $answer.closest(@config.answersSelector)
+      $allAnswersinRow = $(@config.answerSelector, $answerRow)
+      $allAnswersinRow.removeClass(@config.answerSelectedClass)
+      $answer.addClass(@config.answerSelectedClass)
 
     $questionInput = $(@config.questionSelector, $slide)
     $answerInput   = $('input', $answer)
@@ -20,5 +24,7 @@ class @AnswerClick extends AbstractFormsliderPlugin
       $questionInput.prop('id'),
       $answerInput.prop('id'),
       $answerInput.val(),
-      @index()
+      @index(),
+      $slide.hasClass('multiple-answers'),
+      $answer.hasClass(@config.answerSelectedClass)
     )

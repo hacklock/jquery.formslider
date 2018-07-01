@@ -346,7 +346,7 @@ Default configuration:
 config: {
   actions: [
     {
-      selector: '.answer',
+      selector: '.answer:not(.multiple-answers .answer)',
       action: 'next',
       wait: 200
     },

@@ -2,6 +2,7 @@
 
 ##### WIP: 1.2.4
   * Progressbar: better longest path data attribute handling
+  * add basic support for multiple answers
 
 ##### 1.2.3
   * introduce `firstSlideCounts` for progressbar plugin
