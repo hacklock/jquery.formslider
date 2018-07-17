@@ -15,7 +15,7 @@ class @AnswerMemory extends AbstractFormsliderPlugin
       else
         i = 0
         for record in @memoryByQuestionId[questionId]
-          if record.id == answerId
+          if record?.id == answerId
             delete @memoryByQuestionId[questionId][i]
 
           i++
