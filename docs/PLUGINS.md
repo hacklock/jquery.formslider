@@ -8,7 +8,7 @@ Or after initialization:
 ```js
 formslider = $('.my-formslider').formslider();
 
-formslider.loadPlugin({
+formslider.plugins.loadPlugin({
   class: 'BrowserHistory'
   config:{
     updateHash: true
