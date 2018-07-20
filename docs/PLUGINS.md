@@ -137,6 +137,17 @@ config: {
   //   class: 'FormSubmitterAjax',
   //   jquery-form configuration
   // }    
+
+  // submitter: {
+  //   class: 'FormSubmitterEmail',
+  //   visitedSlideSelector: '.slide-visited',
+  //   submitButtonSelector: '.slide-role-contact .next-button',
+  //   mailto: 'hello@slidevision.io',
+  //   subject: 'Hey There!',
+  //   body: 'Tell us your story =)',
+  //   validatorPlugin: 'JqueryInputValidator',
+  //   validateSlideRole: 'contact'
+  // }
 }
 ```
 
