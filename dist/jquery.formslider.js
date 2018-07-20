@@ -193,14 +193,18 @@
       var $allAnswersinRow, $answer, $answerInput, $answerRow, $questionInput, $slide;
       event.preventDefault();
       $answer = $(event.currentTarget);
-      $answerRow = $answer.closest(this.config.answersSelector);
-      $allAnswersinRow = $(this.config.answerSelector, $answerRow);
-      $allAnswersinRow.removeClass(this.config.answerSelectedClass);
-      $answer.addClass(this.config.answerSelectedClass);
-      $slide = this.slideByIndex();
+      $slide = $(this.slideByIndex());
+      if ($slide.hasClass('multiple-answers')) {
+        $answer.toggleClass(this.config.answerSelectedClass);
+      } else {
+        $answerRow = $answer.closest(this.config.answersSelector);
+        $allAnswersinRow = $(this.config.answerSelector, $answerRow);
+        $allAnswersinRow.removeClass(this.config.answerSelectedClass);
+        $answer.addClass(this.config.answerSelectedClass);
+      }
       $questionInput = $(this.config.questionSelector, $slide);
       $answerInput = $('input', $answer);
-      return this.trigger('question-answered', $questionInput.prop('id'), $answerInput.prop('id'), $answerInput.val(), this.index());
+      return this.trigger('question-answered', $questionInput.prop('id'), $answerInput.prop('id'), $answerInput.val(), this.index(), $slide.hasClass('multiple-answers'), $answer.hasClass(this.config.answerSelectedClass));
     };
 
     return AnswerClick;
@@ -221,11 +225,34 @@
       return this.memoryByQuestionId = {};
     };
 
-    AnswerMemory.prototype.memorize = function(event, questionId, answerId, value) {
-      this.memoryByQuestionId[questionId] = {
-        id: answerId,
-        value: value
-      };
+    AnswerMemory.prototype.memorize = function(event, questionId, answerId, value, index, multiple, set) {
+      var i, j, len, record, ref;
+      if (multiple) {
+        if (!this.memoryByQuestionId[questionId]) {
+          this.memoryByQuestionId[questionId] = [];
+        }
+        if (set) {
+          this.memoryByQuestionId[questionId].push({
+            id: answerId,
+            value: value
+          });
+        } else {
+          i = 0;
+          ref = this.memoryByQuestionId[questionId];
+          for (j = 0, len = ref.length; j < len; j++) {
+            record = ref[j];
+            if ((record != null ? record.id : void 0) === answerId) {
+              delete this.memoryByQuestionId[questionId][i];
+            }
+            i++;
+          }
+        }
+      } else {
+        this.memoryByQuestionId[questionId] = {
+          id: answerId,
+          value: value
+        };
+      }
       return this.trigger('answer-memory-updated', this.memoryByQuestionId);
     };
 
@@ -398,6 +425,115 @@
     };
 
     return FormSubmitterCollect;
+
+  })(FormSubmitterAbstract);
+
+  this.FormSubmitterEmail = (function(superClass) {
+    extend(FormSubmitterEmail, superClass);
+
+    FormSubmitterEmail.config = {
+      visitedSlideSelector: '.slide-visited',
+      submitButtonSelector: '.slide-role-contact .next-button',
+      mailto: 'hello@slidevision.io',
+      subject: 'Hey There!',
+      body: 'Tell us your story =)',
+      validatorPlugin: 'JqueryInputValidator',
+      validateSlideRole: 'contact'
+    };
+
+    function FormSubmitterEmail(plugin1, config1, form) {
+      this.plugin = plugin1;
+      this.config = config1;
+      this.form = form;
+      this.collectInputs = bind(this.collectInputs, this);
+      this.formatInputs = bind(this.formatInputs, this);
+      this.generateHref = bind(this.generateHref, this);
+      this.submit = bind(this.submit, this);
+      FormSubmitterEmail.__super__.constructor.call(this, this.plugin, this.config, this.form);
+      this.supressNaturalFormSubmit();
+      this.validator = this.plugin.formslider.plugins.get(this.config.validatorPlugin);
+      $('body').on('click', this.config.submitButtonSelector, (function(_this) {
+        return function(e) {
+          var $target;
+          if (_this.validator.validate(_this.plugin.slideByRole(_this.config.validateSlideRole)) !== true) {
+            e.preventDefault();
+            return false;
+          }
+          $target = $(e.currentTarget);
+          return $target.attr('href', _this.generateHref());
+        };
+      })(this));
+    }
+
+    FormSubmitterEmail.prototype.submit = function(event, slide) {};
+
+    FormSubmitterEmail.prototype.generateHref = function() {
+      var inputs, message, subject;
+      inputs = this.collectInputs();
+      message = this.config.body + "\n\nYour answers:\n\n" + this.formatInputs(inputs);
+      message = encodeURIComponent(message);
+      subject = this.config.subject;
+      subject = encodeURIComponent(subject);
+      return "mailto:" + this.config.mailto + "?subject=" + subject + "&body=" + message;
+    };
+
+    FormSubmitterEmail.prototype.formatInputs = function(inputs) {
+      var directMapping, key, result, value;
+      directMapping = {};
+      for (key in inputs) {
+        value = inputs[key];
+        if (key.indexOf('_answer') > -1) {
+          key = key.replace('_answer', '');
+          if (!(directMapping != null ? directMapping[key] : void 0)) {
+            directMapping[key] = {};
+          }
+          directMapping[key].answer = value;
+        } else {
+          if (!(directMapping != null ? directMapping[key] : void 0)) {
+            directMapping[key] = {};
+          }
+          directMapping[key].question = value;
+        }
+      }
+      result = '';
+      for (key in directMapping) {
+        value = directMapping[key];
+        if (value != null ? value.answer : void 0) {
+          result += "  " + value.question + ": " + value.answer;
+        } else {
+          result += "  " + key + ": " + value.question;
+        }
+        result += "\n";
+      }
+      return result;
+    };
+
+    FormSubmitterEmail.prototype.collectInputs = function() {
+      var $container, $input, $inputs, input, j, k, len, len1, result;
+      result = {};
+      $inputs = $("input.info", $container);
+      for (j = 0, len = $inputs.length; j < len; j++) {
+        input = $inputs[j];
+        $input = $(input);
+        result[$input.attr('name')] = $input.val();
+      }
+      $container = $(this.config.visitedSlideSelector, $container);
+      $inputs = $('input, select, textarea', $container);
+      for (k = 0, len1 = $inputs.length; k < len1; k++) {
+        input = $inputs[k];
+        $input = $(input);
+        if ($input.is(':checkbox') || $input.is(':radio')) {
+          if ($input.is(':checked')) {
+            result[$input.attr('name')] = $input.val();
+          }
+        } else {
+          result[$input.attr('name')] = $input.val();
+        }
+      }
+      return result;
+    };
+
+    return FormSubmitterEmail;
 
   })(FormSubmitterAbstract);
 
@@ -1131,7 +1267,7 @@
     NavigateOnClick.config = {
       actions: [
         {
-          selector: '.answer',
+          selector: '.answer:not(.multiple-answers .answer)',
           action: 'next',
           wait: 200
         }, {
@@ -1313,6 +1449,7 @@
     };
 
     AbstractFormsliderProgressBar.prototype.init = function() {
+      var ref;
       this.on('after.next', (function(_this) {
         return function() {
           return _this.currentIndex++;
@@ -1336,17 +1473,21 @@
       this.progressText = $(this.config.selectorText, this.wrapper);
       this.bar = $(this.config.selectorProgress, this.wrapper);
       this.bar.css('transition-duration', (this.config.animationSpeed / 1000) + 's');
+      this.lengthByDataAttribute = (ref = this.config) != null ? ref.dataKeyForMaxLength : void 0;
+      if (!$("[data-" + this.config.dataKeyForMaxLength + "]", this.container).length) {
+        this.lengthByDataAttribute = false;
+      }
       return this.currentIndex = 0;
     };
 
     AbstractFormsliderProgressBar.prototype.set = function(indexFromZero, percent) {};
 
     AbstractFormsliderProgressBar.prototype.setCountMax = function(slide) {
-      var possibleCountMax, ref;
+      var possibleCountMax;
       if (slide == null) {
         slide = null;
       }
-      if (!((ref = this.config) != null ? ref.dataKeyForMaxLength : void 0)) {
+      if (!this.lengthByDataAttribute) {
         this.countMax = this.slidesThatCount();
         return;
       }
