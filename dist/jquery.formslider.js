@@ -446,16 +446,15 @@
       this.config = config1;
       this.form = form;
       this.collectInputs = bind(this.collectInputs, this);
-      this.formatInputs = bind(this.formatInputs, this);
       this.generateHref = bind(this.generateHref, this);
-      this.submit = bind(this.submit, this);
       FormSubmitterEmail.__super__.constructor.call(this, this.plugin, this.config, this.form);
       this.supressNaturalFormSubmit();
       this.validator = this.plugin.formslider.plugins.get(this.config.validatorPlugin);
       $('body').on('click', this.config.submitButtonSelector, (function(_this) {
         return function(e) {
-          var $target;
-          if (_this.validator.validate(_this.plugin.slideByRole(_this.config.validateSlideRole)) !== true) {
+          var $target, contactSlide;
+          contactSlide = _this.plugin.slideByRole(_this.config.validateSlideRole);
+          if (_this.validator.validate(contactSlide) !== true) {
             e.preventDefault();
             return false;
           }
