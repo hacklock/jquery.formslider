@@ -1,9 +1,12 @@
 # Changelog
 
-##### WIP: 1.2.5
+##### 1.2.6
+  * fix coffeelint errors
+
+##### 1.2.5
   * implement `FormSubmitterEmail`
-  
-##### WIP: 1.2.4
+
+##### 1.2.4
   * Progressbar: better longest path data attribute handling
   * add basic support for multiple answers
 

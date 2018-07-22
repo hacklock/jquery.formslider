@@ -15,7 +15,8 @@ class @FormSubmitterEmail extends FormSubmitterAbstract
     @validator = @plugin.formslider.plugins.get(@config.validatorPlugin)
 
     $('body').on('click', @config.submitButtonSelector, (e) =>
-      if @validator.validate(@plugin.slideByRole(@config.validateSlideRole)) != true
+      contactSlide = @plugin.slideByRole(@config.validateSlideRole)
+      if @validator.validate(contactSlide) != true
         e.preventDefault()
         return false
 
@@ -23,7 +24,7 @@ class @FormSubmitterEmail extends FormSubmitterAbstract
       $target.attr('href', @generateHref())
     )
 
-  submit: (event, slide) =>
+  submit: (event, slide) ->
 
 
   generateHref: =>
@@ -36,7 +37,7 @@ class @FormSubmitterEmail extends FormSubmitterAbstract
 
     "mailto:#{@config.mailto}?subject=#{subject}&body=#{message}"
 
-  formatInputs: (inputs)=>
+  formatInputs: (inputs) ->
     directMapping = {}
     for key, value of inputs
       if key.indexOf('_answer') > -1
