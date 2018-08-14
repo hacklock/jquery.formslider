@@ -16,7 +16,13 @@ bower install jquery.formslider --save
 
 # or
 
+npm install -g bower
 npm install jquery.formslider --save
+
+# if you want to develop the source you also have to:
+
+npm install gulp-cli -g
+
 ```
 
 ## Integration
